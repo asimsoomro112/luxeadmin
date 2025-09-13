@@ -1,0 +1,30 @@
+@import "tailwindcss";
+
+@source "./src/**/*.{js,jsx,ts,tsx}";
+
+@theme {
+  --color-primary: #b45309; /* amber-800 for LUXE brand */
+  --color-secondary: #fef3c7; /* amber-100 */
+  --color-accent: #1f2937; /* gray-800 */
+  --font-family-serif: "Playfair Display", serif;
+  --font-family-sans: "Inter", sans-serif;
+}
+
+/* Consistent input and select styling */
+input, select {
+  @apply w-full p-3 border rounded-md bg-gray-50 dark:bg-gray-700 dark:border-gray-600 dark:text-white focus:ring-2 focus:ring-amber-700;
+}
+
+/* Ensure table cells wrap text properly */
+table {
+  @apply w-full table-auto;
+}
+
+td, th {
+  @apply text-left align-middle;
+}
+
+/* File input styling */
+input[type="file"] {
+  @apply w-full text-sm text-gray-500 file:mr-4 file:py-2 file:px-4 file:rounded-md file:border-0 file:bg-amber-800 file:text-white file:hover:bg-amber-900;
+}
