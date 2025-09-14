@@ -14,6 +14,7 @@ const LogoutIcon = (props) => <svg {...props} xmlns="http://www.w3.org/2000/svg"
 const CloseIcon = (props) => <svg {...props} xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M6 18L18 6M6 6l12 12" /></svg>;
 const SunIcon = ({ className }) => <svg className={className} xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 3v1m0 16v1m9-9h-1M4 12H3m15.364 6.364l-.707-.707M6.343 6.343l-.707-.707m12.728 0l-.707.707M6.343 17.657l-.707.707M16 12a4 4 0 11-8 0 4 4 0 018 0z" /></svg>;
 const MoonIcon = ({ className }) => <svg className={className} xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M20.354 15.354A9 9 0 018.646 3.646 9.003 9.003 0 0012 21a9.003 9.003 0 008.354-5.646z" /></svg>;
+const MenuIcon = ({ className }) => <svg className={className} xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M4 6h16M4 12h16m-7 6h7" /></svg>;
 
 // --- CONTEXTS ---
 const AdminAuthContext = createContext();
@@ -178,16 +179,33 @@ const DashboardHeader = () => {
   const { page } = useContext(AdminPageContext);
   const { admin } = useContext(AdminAuthContext);
   const { isDarkMode, toggleTheme } = useContext(ThemeContext);
+  const [sidebarOpen, setSidebarOpen] = useState(false);
 
   return (
     <header className="flex items-center justify-between p-6 bg-white dark:bg-gray-800 border-b border-gray-200 dark:border-gray-700">
-      <h1 className="text-2xl font-semibold text-gray-800 dark:text-white capitalize">{page}</h1>
+      <div className="flex items-center">
+        <button onClick={() => setSidebarOpen(!sidebarOpen)} className="md:hidden mr-4 text-gray-600 dark:text-gray-300 hover:text-amber-800 dark:hover:text-amber-600">
+          <MenuIcon className="h-6 w-6" />
+        </button>
+        <h1 className="text-2xl font-semibold text-gray-800 dark:text-white capitalize">{page}</h1>
+      </div>
       <div className="flex items-center space-x-4">
         <button onClick={toggleTheme} className="text-gray-600 dark:text-gray-300 hover:text-amber-800 dark:hover:text-amber-600">
           {isDarkMode ? <SunIcon className="h-5 w-5" /> : <MoonIcon className="h-5 w-5" />}
         </button>
         <span className="text-sm text-gray-600 dark:text-gray-300">Welcome, {admin?.name}</span>
       </div>
+      {sidebarOpen && (
+        <div className="md:hidden fixed inset-0 z-50">
+          <div className="absolute inset-0 bg-black opacity-50" onClick={() => setSidebarOpen(false)}></div>
+          <div className="absolute left-0 top-0 h-full w-64 bg-white dark:bg-gray-800 shadow-md flex flex-col">
+            <button onClick={() => setSidebarOpen(false)} className="absolute top-4 right-4 text-gray-600 dark:text-gray-300 hover:text-amber-800 dark:hover:text-amber-600">
+              <CloseIcon className="h-6 w-6" />
+            </button>
+            <Sidebar />
+          </div>
+        </div>
+      )}
     </header>
   );
 };
@@ -333,7 +351,7 @@ const ProductManagement = () => {
         <button onClick={() => { setEditingProduct(null); setShowModal(true); }} className="px-4 py-2 bg-amber-800 text-white rounded-md hover:bg-amber-900">Add Product</button>
       </div>
       <div className="bg-white dark:bg-gray-800 rounded-lg shadow overflow-x-auto">
-        <table className="min-w-full">
+        <table className="min-w-full table-auto">
           <thead>
             <tr className="text-left font-bold bg-gray-50 dark:bg-gray-700">
               <th className="p-4">Image</th><th className="p-4">Name</th><th className="p-4">Category</th><th className="p-4">Price</th><th className="p-4">Stock</th><th className="p-4">Actions</th>
@@ -349,7 +367,7 @@ const ProductManagement = () => {
                     <div className="h-10 w-10 bg-gray-200 dark:bg-gray-700 rounded-md flex items-center justify-center text-gray-500">No Image</div>
                   )}
                 </td>
-                <td className="p-4">{p.name}</td><td className="p-4">{p.category}</td><td className="p-4">PKR {p.price.toLocaleString()}</td><td className="p-4">{p.stock}</td>
+                <td className="p-4">{p.name}</td><td className="p-4">{p.category}</td><th className="p-4">PKR {p.price.toLocaleString()}</th><td className="p-4">{p.stock}</td>
                 <td className="p-4 space-x-2">
                   <button onClick={() => { setEditingProduct(p); setShowModal(true); }} className="text-blue-500 hover:text-blue-700">Edit</button>
                   <button onClick={() => handleDelete(p.id)} className="text-red-500 hover:text-red-700">Delete</button>
@@ -745,91 +763,6 @@ const CategoryFormModal = ({ category, onSave, onClose }) => {
   );
 };
 
-const OrderDetailsModal = ({ order, onClose }) => {
-  return (
-    <div className="fixed inset-0 z-50 flex items-center justify-center bg-black bg-opacity-50">
-      <div className="bg-white dark:bg-gray-800 rounded-lg shadow-xl p-8 w-full max-w-lg">
-        <div className="flex justify-between items-center mb-6">
-          <h3 className="text-xl font-bold">Order Details: {order.id}</h3>
-          <button onClick={onClose}><CloseIcon className="h-6 w-6" /></button>
-        </div>
-        <div className="space-y-4">
-          <div>
-            <h4 className="text-sm font-semibold text-gray-500 dark:text-gray-400">Customer Email</h4>
-            <p>{order.customerEmail || 'N/A'}</p>
-          </div>
-          <div>
-            <h4 className="text-sm font-semibold text-gray-500 dark:text-gray-400">Date</h4>
-            <p>{order.date?.split('T')[0] || 'N/A'}</p>
-          </div>
-          <div>
-            <h4 className="text-sm font-semibold text-gray-500 dark:text-gray-400">Total</h4>
-            <p>PKR {(order.total || 0).toLocaleString()}</p>
-          </div>
-          <div>
-            <h4 className="text-sm font-semibold text-gray-500 dark:text-gray-400">Shipping Address</h4>
-            <p>
-              {order.shipping ? (
-                <>
-                  {order.shipping.fullName}, {order.shipping.address}, {order.shipping.city}, {order.shipping.postalCode}
-                </>
-              ) : (
-                'N/A'
-              )}
-            </p>
-          </div>
-          <div>
-            <h4 className="text-sm font-semibold text-gray-500 dark:text-gray-400">Payment Method</h4>
-            <p>{order.paymentMethod || 'N/A'}</p>
-          </div>
-          <div>
-            <h4 className="text-sm font-semibold text-gray-500 dark:text-gray-400">Items</h4>
-            {order.items && order.items.length > 0 ? (
-              <div className="mt-2">
-                <table className="min-w-full divide-y divide-gray-200 dark:divide-gray-700">
-                  <thead>
-                    <tr className="text-left text-sm font-bold bg-gray-50 dark:bg-gray-700">
-                      <th className="p-2">Product Name</th>
-                      <th className="p-2">Size</th>
-                      <th className="p-2">Quantity</th>
-                      <th className="p-2">Price</th>
-                      <th className="p-2">Subtotal</th>
-                    </tr>
-                  </thead>
-                  <tbody className="divide-y divide-gray-200 dark:divide-gray-700">
-                    {order.items.map((item, index) => (
-                      <tr key={index}>
-                        <td className="p-2">{item.name || 'Unknown Product'}</td>
-                        <td className="p-2">{item.size || 'N/A'}</td>
-                        <td className="p-2">{item.quantity || 0}</td>
-                        <td className="p-2">PKR {(item.price || 0).toLocaleString()}</td>
-                        <td className="p-2">PKR {((item.quantity || 0) * (item.price || 0)).toLocaleString()}</td>
-                      </tr>
-                    ))}
-                  </tbody>
-                </table>
-                <div className="mt-4 text-right">
-                  <p className="font-semibold">Total: PKR {(order.total || 0).toLocaleString()}</p>
-                </div>
-              </div>
-            ) : (
-              <p>No items found in this order.</p>
-            )}
-          </div>
-        </div>
-        <div className="flex justify-end mt-6">
-          <button
-            onClick={onClose}
-            className="px-4 py-2 bg-gray-200 dark:bg-gray-600 rounded-md text-gray-800 dark:text-gray-200"
-          >
-            Close
-          </button>
-        </div>
-      </div>
-    </div>
-  );
-};
-
 const OrderManagement = () => {
   const [orders, setOrders] = useState([]);
   const [selectedOrder, setSelectedOrder] = useState(null);
@@ -981,6 +914,7 @@ const UserManagement = () => {
 // --- DASHBOARD LAYOUT ---
 const DashboardLayout = () => {
   const { page } = useContext(AdminPageContext);
+  const [sidebarOpen, setSidebarOpen] = useState(false);
 
   const renderPage = () => {
     switch (page) {
@@ -994,11 +928,28 @@ const DashboardLayout = () => {
   };
 
   return (
-    <div className="flex h-screen bg-gray-100 dark:bg-gray-900 text-gray-800 dark:text-gray-200">
-      <Sidebar />
+    <div className="flex min-h-screen bg-gray-100 dark:bg-gray-900 text-gray-800 dark:text-gray-200">
+      {/* Sidebar for larger screens */}
+      <div className="hidden md:block">
+        <Sidebar />
+      </div>
+
+      {/* Mobile Sidebar Overlay */}
+      {sidebarOpen && (
+        <div className="md:hidden fixed inset-0 z-50">
+          <div className="absolute inset-0 bg-black opacity-50" onClick={() => setSidebarOpen(false)}></div>
+          <div className="absolute left-0 top-0 h-full w-64 bg-white dark:bg-gray-800 shadow-md flex flex-col">
+            <button onClick={() => setSidebarOpen(false)} className="absolute top-4 right-4 text-gray-600 dark:text-gray-300 hover:text-amber-800 dark:hover:text-amber-600">
+              <CloseIcon className="h-6 w-6" />
+            </button>
+            <Sidebar />
+          </div>
+        </div>
+      )}
+
       <div className="flex-1 flex flex-col overflow-hidden">
-        <DashboardHeader />
-        <main className="flex-1 overflow-x-hidden overflow-y-auto">
+        <DashboardHeader setSidebarOpen={setSidebarOpen} />
+        <main className="flex-1 overflow-x-hidden overflow-y-auto p-4 md:p-6">
           {renderPage()}
         </main>
       </div>
